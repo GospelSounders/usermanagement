@@ -132,7 +132,7 @@
                 </q-expansion-item>
     
                 <q-separator />
-                <q-item tag="a" target="_blank">
+                <q-item tag="a" href="#/notifications">
                     <q-item-section avatar>
                         <q-icon name="notifications_none" />
                     </q-item-section>
@@ -144,7 +144,7 @@
                     </q-item-section>
                 </q-item>
     
-                <q-expansion-item group="somegroup" icon="person" label="Profile">
+                <!-- <q-expansion-item group="somegroup" icon="person" label="Profile">
                     <q-card class="bg-primary">
                         <q-card-section>
                             <q-list>
@@ -175,9 +175,20 @@
                             </q-list>
                         </q-card-section>
                     </q-card>
-                </q-expansion-item>
+                </q-expansion-item> -->
+                <q-item tag="a" href="#/profile">
+                    <q-item-section avatar>
+                        <q-icon name="person" />
+                    </q-item-section>
+                    <q-item-section>
+                        <q-item-label>Profile</q-item-label>
+                        <!-- <q-item-label caption>
+                                        caption
+                                    </q-item-label> -->
+                    </q-item-section>
+                </q-item>
     
-                <q-item tag="a" target="_blank">
+                <q-item tag="a" href="#/auditLogs">
                     <q-item-section avatar>
                         <q-icon name="history" />
                     </q-item-section>

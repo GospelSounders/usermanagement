@@ -116,6 +116,51 @@ class _authHelpers extends Events {
             resolve(care)
         })
     }
+    whoAmI = async () => {
+        return new Promise(async (resolve, reject) => {
+            let [err, care] = await to(this.readUserData());
+            console.log('WHOAMI')
+            if (err) return reject(err);
+            resolve(care)
+        });
+    }
+    fetchUsers = async () => {
+        return new Promise(async (resolve, reject) => {
+            let [err, care] = await to(this.whoAmI())
+            if (err) return reject(err);
+            let authority = care.authority;
+            let customerId;
+            if (authority === 'TENANT_ADMIN') {
+                let url = `${this.settings.TBURL}/tenant/customers?customerTitle=GS Publications`
+                    ;[err, care] = await to(axios.get(url, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Authorization': 'Bearer ' + this.jwt_token
+                        }
+                    }));
+                    if (err) return reject(err);
+                    customerId = care.data.id.id;
+
+            }else{
+                
+                console.log("i am a customer....")
+                console.log(care)
+                customerId = care.customerId.id;
+            }
+            console.log("CUSTOMER ID", customerId)
+            ;[err, care] = await to(this.sendSaveTeletry({ "type": "users", "action": "get", "customerId": customerId }));
+            if (err) return reject(err);
+            // console.log(care)
+            resolve(care)
+            // let [err, care] = await to(this.sendSaveTeletry({ "type": "customer", "action": "get" }));
+            // // https://demo.thingsboard.io/api/customer/f3bbd0c0-6585-11eb-abf1-db171cd9ed33/users?pageSize=10&page=0&sortProperty=createdTime&sortOrder=DESC
+            // [err, care] = await to(axios.get())
+            // if (err) {
+            //     return reject(err);
+            // }
+            // resolve(care)
+        })
+    }
     createRole = async (role) => {
         return new Promise(async (resolve, reject) => {
             let [err, care] = await to(this.sendSaveTeletry({ "type": "roles", "action": "create", "role": role }))
@@ -123,6 +168,40 @@ class _authHelpers extends Events {
                 return reject(err);
             }
             resolve(care)
+        })
+    }
+    createUser = async (user, firstName, lastName) => {
+        return new Promise(async (resolve, reject) => {
+            let [err, care] = await to(this.sendSaveTeletry({ "type": "users", "action": "create", "user": user, firstName, lastName }))
+            if (err) {
+                return reject(err);
+            }
+            console.log('result from creating user')
+            let userData = JSON.parse(JSON.stringify(care));
+            // [err, care] = await to(this.getActivationLink(userData.id, userData.token));
+            // if (err) {
+            //     return reject(err);
+            // }
+            // console.log('===========')
+            // console.log('===========')
+            // console.log('===========')
+            // console.log(care, userData)
+            resolve(userData)
+        })
+    }
+    getActivationLink = async(userId, token) =>{
+        return new Promise(async (resolve, reject) => {
+            let url = `${this.settings.TBURL}/user/${userId}/activationLink`
+            let [err, care] = await to(axios.get(`${this.settings.JSONPROXY}?path=${url}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Authorization': 'Bearer ' + token
+                }
+            }));
+            if (err) {
+                return reject(err);
+            }
+            resolve(care.data)
         })
     }
     createProject = async (project) => {
@@ -216,7 +295,7 @@ class _authHelpers extends Events {
                         reject(err);
                     } else {
                         let responses = care.additionalInfo.responses;
-                        if (responses[rqId]) {
+                        if (responses && responses[rqId]) {
                             console.log('---------167')
                             let response = responses[rqId];
                             console.log(response)
@@ -233,13 +312,13 @@ class _authHelpers extends Events {
                                 reject1(response.msg.error)
                                 return reject(response.msg.error);
                             }
-                        }else{
+                        } else {
                             let now = new Date().getTime();
                             let timeDiff = now - beginLongWaitAt;
-                            if(timeDiff <= 120000){
+                            if (timeDiff <= 120000) {
                                 console.log(timeDiff, rqId)
-                            this.emit(listener);
-                            }else{
+                                this.emit(listener);
+                            } else {
                                 this.removeListener(listener, getResponse)
                                 reject('timed out')
                                 reject1('timed out')

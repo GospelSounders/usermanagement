@@ -1,5 +1,6 @@
 {
     "TB_URL": "https://demo.thingsboard.io/api",
     "PUBLIC_DEVICE_ACCESS_TOKEN": "YQOH2URfPtyekyruqgr9",
-    "CORS_PROXY": "http://cseco.co.ke:8080/"
+    "CORS_PROXY": "http://cseco.co.ke:8080/",
+    "JSONPROXY": "https://jsonproxy.cseco.co.ke"
 }

@@ -36,6 +36,34 @@ const routes = [
     ]
   }, 
   {
+    path: '/help',
+    component: () => import('layouts/HomeLayout.vue'),
+    children: [
+      { path: '', component: () => import('pages/help.vue') }
+    ]
+  },
+  {
+    path: '/auditLogs',
+    component: () => import('layouts/HomeLayout.vue'),
+    children: [
+      { path: '', component: () => import('pages/auditLogs.vue') }
+    ]
+  },
+{
+    path: '/profile',
+    component: () => import('layouts/HomeLayout.vue'),
+    children: [
+      { path: '', component: () => import('pages/profile.vue') }
+    ]
+  },
+{
+    path: '/notifications',
+    component: () => import('layouts/HomeLayout.vue'),
+    children: [
+      { path: '', component: () => import('pages/notifications.vue') }
+    ]
+  },
+{
     path: '/addroles',
     component: () => import('layouts/HomeLayout.vue'),
     children: [

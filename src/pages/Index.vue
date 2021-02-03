@@ -18,49 +18,8 @@
           <q-tab name="register" icon="create" label="Register" />
         </q-tabs>
         <loginForm v-if="tab==='login'"/>
-        <q-form
-          v-if="tab === 'register'"
-          @submit="onSubmit"
-          @reset="onReset"
-          class="q-gutter-md text-white"
-        >
-          <q-input
-            filled
-            v-model="name"
-            label="Your name *"
-            hint="Name and surname"
-            lazy-rules
-            :rules="[
-              (val) => (val && val.length > 0) || 'Please type something',
-            ]"
-          />
-
-          <q-input
-            filled
-            type="number"
-            v-model="age"
-            label="Your age *"
-            lazy-rules
-            :rules="[
-              (val) => (val !== null && val !== '') || 'Please type your age',
-              (val) => (val > 0 && val < 100) || 'Please type a real age',
-            ]"
-          />
-
-          <!-- <q-toggle v-model="accept" label="I accept the license and terms" /> -->
-          <terms :accept="accept" :main="main"/>
-
-          <div>
-            <q-btn label="Submit" type="submit" color="primary" />
-            <q-btn
-              label="Reset"
-              type="reset"
-              color="primary"
-              flat
-              class="q-ml-sm"
-            />
-          </div>
-        </q-form>
+        <registrationForm v-if="tab==='register'"/>
+        
       </q-card-section>
     </q-card>
 
@@ -74,10 +33,11 @@
 <script>
 import terms from "../components/terms.vue";
 import loginForm from "../components/loginForm.vue";
+import registrationForm from "../components/registrationForm.vue";
 
 export default {
   name: "PageIndex",
-  components: { terms , loginForm},
+  components: { terms , loginForm, registrationForm},
   data() {
     return {
       tab: "login",

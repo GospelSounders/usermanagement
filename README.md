@@ -8,7 +8,8 @@ Due to the dearth of resources, we have chosen to design and build our systems i
 
 1. [Thingsboard](https://demo.thingsboard.io/)
 2. [Github pages](https://github.com/)
-3. [Cors Proxy](https://cors-anywhere.herokuapp.com/), [cseco.co.ke:8080](http://cseco.co.ke:8080), [cors.cseco.co.ke](https://cors.cseco.co.ke:8080)
+3. [Cors Proxy](https://cors-anywhere.herokuapp.com/), [cseco.co.ke:8080](http://cseco.co.ke:8080), [cors.cseco.co.ke](https://cors.cseco.co.ke:8080). Used to overcome chrome Cross-Origin issues.
+4. [JSON Proxy](https://github.com/csymapp/jsonproxy) - check jsonproxy server in rule rule chain. Required because rule nodes do not accept text as input.
 
 ***Note***
 
@@ -24,6 +25,9 @@ This access control system is intended to authenticate and authorize users on an
 2. Created User Management Device with 
 3. Saved tb credentials (tb_tenant_*)in `server attributes` of device (so that they can only be accessible from rule chain)
 4. Obtained accessToken of public user Management Device
+5. `Created Customer`. GS Publications
+5. `Created Assets`. Which
+5. `Rule chains`. Which
 
 ## Usage
 
