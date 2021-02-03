@@ -76,7 +76,7 @@ export default {
         this.showCustom();
       let [err, care] = await to(
         axios.get(
-          "https://raw.githubusercontent.com/GospelSounders/usermanagement/master/README.md"
+          "https://raw.githubusercontent.com/GospelSounders/usermanagement/master/terms.md"
         )
       );
       this.working = false;
