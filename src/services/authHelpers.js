@@ -170,14 +170,27 @@ class _authHelpers extends Events {
             resolve(care)
         })
     }
-    createUser = async (user, firstName, lastName) => {
+    createUser = async (user, firstName, lastName, password) => {
         return new Promise(async (resolve, reject) => {
-            let [err, care] = await to(this.sendSaveTeletry({ "type": "users", "action": "create", "user": user, firstName, lastName }))
+            console.log('step1...')
+            let [err, care] = await to(this.sendSaveTeletry({ "type": "users", "action": "create", "user": user, firstName, lastName, password}))
             if (err) {
+                console.log('REJECTED========')
+                console.log(err)
                 return reject(err);
             }
             console.log('result from creating user')
             let userData = JSON.parse(JSON.stringify(care));
+            console.log(care)
+            if(Object.keys(care).length === 0){
+                [err, care] = await to (this.login({username:user, password}))
+                if(err){
+                    return reject('Registration failed. Please try submitting the form again')
+                }
+                resolve({})
+            }else{
+                resolve(userData)
+            }
             // [err, care] = await to(this.getActivationLink(userData.id, userData.token));
             // if (err) {
             //     return reject(err);
@@ -186,7 +199,7 @@ class _authHelpers extends Events {
             // console.log('===========')
             // console.log('===========')
             // console.log(care, userData)
-            resolve(userData)
+           
         })
     }
     getActivationLink = async(userId, token) =>{
@@ -263,11 +276,16 @@ class _authHelpers extends Events {
         if (!data.rqId) {
             data.rqId = cryptoRandomString({ length: 20, type: 'url-safe' });
         }
+        // let dontWait = data.dontWait;
+        // delete data.dontWait
+        console.log("step2")
+        console.log({data})
         return new Promise(async (resolve, reject) => {
             let publicToken = this.settings.PUBLIC_DEVICE_ACCESS_TOKEN
             console.log(this.settings)
             let proxyUrl = this.settings.CORS_PROXY
             let url = `${this.settings.TBURL}/v1/${publicToken}/telemetry`
+            console.log(data)
             let [err, care] = await to(axios.post(proxyUrl + url, data, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -275,11 +293,14 @@ class _authHelpers extends Events {
             }))
             console.log('ERRED......')
             console.log(err)
+            console.log(care)
             if (err) return reject(err);
             let rqId = data.rqId;
             let wait, repeat;
             let numRequests = 0;
+            // if(dontWait){
 
+            // }
             // make this even driven
             let beginLongWaitAt = new Date().getTime();
             const getResponse = async () => {
@@ -288,11 +309,23 @@ class _authHelpers extends Events {
                     let listener = cryptoRandomString({ length: 20, type: 'url-safe' });
                     this.once(listener, getResponse);
                     if (err) {
-                        // console.log('---------160')
+                        console.log(err.status)
+                        console.log(err.response.data.status)
+                        console.log(err.data)
+                        
+                        console.log(err)
+                        this.removeListener(listener, getResponse)
+                       if( err.response.data.status === 401){   // anuthorized
+                        console.log('---------160')
+                            resolve1({})
+                            resolve({})
+                       }else{
                         // clearTimeout(wait);
                         // clearInterval(repeat);
+                        console.log('---------1601')
                         reject1(err)
                         reject(err);
+                       }
                     } else {
                         let responses = care.additionalInfo.responses;
                         if (responses && responses[rqId]) {

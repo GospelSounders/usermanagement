@@ -11,7 +11,6 @@
     >
 
     <q-dialog
-    v-if="termsText !== ''"
       v-model="termsDialog"
       transition-show="rotate"
       transition-hide="rotate"

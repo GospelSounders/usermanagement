@@ -275,7 +275,7 @@ export default {
         this.working = true;
         this.showCustom();
         let [err, care] = await to(
-          authHelpers.createUser(this.email, this.firstName, this.lastName)
+          authHelpers.createUser(this.email, this.firstName, this.lastName, this.password)
         );
         this.working = false;
         if (err) {

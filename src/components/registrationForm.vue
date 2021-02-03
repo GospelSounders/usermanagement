@@ -83,6 +83,7 @@ export default {
   props: {},
   async created() {
     authHelpers.setSettings({ TBURL: sysValues["TB_URL"] });
+    authHelpers.setSettings(sysValues);
     let [err, care] = await to(authHelpers.isLoggedIn());
     if (care) {
       window.location.assign("#/home");
@@ -191,7 +192,7 @@ export default {
         this.working = true;
         this.showCustom();
         let [err, care] = await to(
-          authHelpers.createUser(this.email, this.firstName, this.lastName)
+          authHelpers.createUser(this.email, this.firstName, this.lastName, this.password)
         );
         this.working = false;
         if (err) {
@@ -202,6 +203,10 @@ export default {
           resolve(false);
         } else {
           this.users.push(care);
+          this.$q.notify({
+            type: "positive",
+            message: 'Registration successful',
+          });
           // console.log(care);
         }
       });

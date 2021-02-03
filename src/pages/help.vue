@@ -29,7 +29,6 @@ export default {
       return
     }
     ;[err, care] = await to(axios.get("https://raw.githubusercontent.com/GospelSounders/usermanagement/master/README.md"));
-    console.log(care)
     if(care){
         this.helpText = care.data
     }
