@@ -351,7 +351,7 @@ class _authHelpers extends Events {
             let proxyUrl = this.settings.CORS_PROXY
             let url = `${this.settings.TBURL}/v1/${publicToken}/telemetry`
             console.log(data)
-            let [err, care] = await to(axios.post(proxyUrl + url, data, {
+            let [err, care] = await to(axios.post(`${proxyUrl}/${url}`, data, {
                 headers: {
                     'Content-Type': 'application/json',
                 }
