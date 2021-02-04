@@ -42,6 +42,7 @@ class _authHelpers extends Events {
     logout = () => {
         window.localStorage.removeItem("tbTokenGSAC");
         window.localStorage.removeItem("tbRefreshTokenGSAC");
+        this.jwt_token = null
         return;
     }
     login = async (params) => {
@@ -138,18 +139,20 @@ class _authHelpers extends Events {
                             'X-Authorization': 'Bearer ' + this.jwt_token
                         }
                     }));
-                    if (err) return reject(err);
-                    customerId = care.data.id.id;
+                if (err) return reject(err);
+                customerId = care.data.id.id;
 
-            }else{
-                
+            } else {
+
                 console.log("i am a customer....")
                 console.log(care)
                 customerId = care.customerId.id;
             }
             console.log("CUSTOMER ID", customerId)
-            ;[err, care] = await to(this.sendSaveTeletry({ "type": "users", "action": "get", "customerId": customerId }));
-            if (err) return reject(err);
+                ;[err, care] = await to(this.sendSaveTeletry({ "type": "users", "action": "get", "customerId": customerId }));
+
+
+            if (err) return reject(err.msg || err);
             // console.log(care)
             resolve(care)
             // let [err, care] = await to(this.sendSaveTeletry({ "type": "customer", "action": "get" }));
@@ -170,39 +173,100 @@ class _authHelpers extends Events {
             resolve(care)
         })
     }
-    createUser = async (user, firstName, lastName, password) => {
+    createUser = async (userParams, dontWait) => {
+        let { user, firstName, lastName, password } = userParams;
+        console.log('PPPPPPPPPPPPPPPPPPPPp')
         return new Promise(async (resolve, reject) => {
             console.log('step1...')
-            let [err, care] = await to(this.sendSaveTeletry({ "type": "users", "action": "create", "user": user, firstName, lastName, password}))
+            let [err, care] = await to(this.sendSaveTeletry({ "type": "users", "action": "create", "user": user, firstName, lastName, password }, dontWait))
             if (err) {
                 console.log('REJECTED========')
                 console.log(err)
                 return reject(err);
             }
-            console.log('result from creating user')
-            let userData = JSON.parse(JSON.stringify(care));
-            console.log(care)
-            if(Object.keys(care).length === 0){
-                [err, care] = await to (this.login({username:user, password}))
-                if(err){
-                    return reject('Registration failed. Please try submitting the form again')
+            if (dontWait) {
+                console.log('NEVER WAITING')
+                    ;[err, care] = await to(this.checkSuccessfulCreateUser(user, password))
+                if (err) {
+                    return reject(err)
                 }
-                resolve({})
-            }else{
-                resolve(userData)
+                resolve(care)
+            } else {
+                console.log('result from creating user')
+                let userData = JSON.parse(JSON.stringify(care));
+                console.log(care)
+                if (Object.keys(care).length === 0) {
+                    [err, care] = await to(this.login({ username: user, password }))
+                    if (err) {
+                        return reject('Registration failed. Please try submitting the form again')
+                    }
+                    resolve({})
+                } else {
+                    resolve(userData)
+                }
             }
-            // [err, care] = await to(this.getActivationLink(userData.id, userData.token));
-            // if (err) {
-            //     return reject(err);
-            // }
-            // console.log('===========')
-            // console.log('===========')
-            // console.log('===========')
-            // console.log(care, userData)
-           
         })
     }
-    getActivationLink = async(userId, token) =>{
+    checkSuccessfulCreateUser = async (user, password) => {
+        return new Promise(async (resolve, reject) => {
+            let beginLongWaitAt = new Date().getTime();;
+            console.log('starting for sure...')
+            const getResponse = async () => {
+                console.log('here.....')
+                let listener = cryptoRandomString({ length: 20, type: 'url-safe' });
+                this.once(listener, getResponse);
+                return new Promise(async (resolve1, reject1) => {
+                    let [err, care] = await to(this.login({ username: user, password }));
+                    if (err) {
+                        console.log(err.data)
+                        let now = new Date().getTime();
+                        let timeDiff = now - beginLongWaitAt;
+                        if (timeDiff <= 10000) { // 1 minute
+                            this.emit(listener);
+                        } else {
+                            this.removeListener(listener, getResponse)
+                            reject(`Error creating account. Probably ${user} already exists`)
+                            reject1('Timed out')
+                        }
+                    }
+                    if (care === undefined) {
+                        let now = new Date().getTime();
+                        let timeDiff = now - beginLongWaitAt;
+                        if (timeDiff <= 10000) { // 1 minute
+                            this.emit(listener);
+                        } else {
+                            this.removeListener(listener, getResponse)
+                            reject('Error creating account. Probably ${user} already exists')
+                            reject1('Timed out')
+                        }
+                    } else {
+                        console.log(care)
+                        this.removeListener(listener, getResponse)
+                        resolve1(care.data)
+                        return resolve(care.data)
+                    }
+
+
+                })
+            }
+            await to(getResponse())
+        })
+    }
+    deleteUser = async (userId) => {
+        return new Promise(async (resolve, reject) => {
+            console.log('STARGINT TO DELETE')
+            let [err, care] = await to(this.sendSaveTeletry({ "type": "users", "action": "delete", "user": userId }))
+            if (err) {
+                console.log('REJECTED========')
+                console.log(err)
+                return reject(err);
+            }
+            let userData = JSON.parse(JSON.stringify(care));
+            console.log(care)
+            resolve(userData)
+        })
+    }
+    getActivationLink = async (userId, token) => {
         return new Promise(async (resolve, reject) => {
             let url = `${this.settings.TBURL}/user/${userId}/activationLink`
             let [err, care] = await to(axios.get(`${this.settings.JSONPROXY}?path=${url}`, {
@@ -266,12 +330,13 @@ class _authHelpers extends Events {
     /**
      * save telemetry
      */
-    sendSaveTeletry = async (data) => {
+    sendSaveTeletry = async (data, dontWait = false) => {
         if (!data.userId) {
             data.userId = this.userId
         }
         if (!data.jwt_token) {
-            data.jwt_token = this.jwt_token
+            if (this.jwt_token)
+                data.jwt_token = this.jwt_token
         }
         if (!data.rqId) {
             data.rqId = cryptoRandomString({ length: 20, type: 'url-safe' });
@@ -279,7 +344,7 @@ class _authHelpers extends Events {
         // let dontWait = data.dontWait;
         // delete data.dontWait
         console.log("step2")
-        console.log({data})
+        console.log({ data })
         return new Promise(async (resolve, reject) => {
             let publicToken = this.settings.PUBLIC_DEVICE_ACCESS_TOKEN
             console.log(this.settings)
@@ -295,6 +360,10 @@ class _authHelpers extends Events {
             console.log(err)
             console.log(care)
             if (err) return reject(err);
+            if (dontWait) {
+                console.log('NO WAITING..')
+                return resolve(true);
+            }
             let rqId = data.rqId;
             let wait, repeat;
             let numRequests = 0;
@@ -312,20 +381,23 @@ class _authHelpers extends Events {
                         console.log(err.status)
                         console.log(err.response.data.status)
                         console.log(err.data)
-                        
+
                         console.log(err)
                         this.removeListener(listener, getResponse)
-                       if( err.response.data.status === 401){   // anuthorized
-                        console.log('---------160')
+                        if (err.response.data.status === 401) {   // anuthorized
+                            console.log('---------160')
                             resolve1({})
                             resolve({})
-                       }else{
-                        // clearTimeout(wait);
-                        // clearInterval(repeat);
-                        console.log('---------1601')
-                        reject1(err)
-                        reject(err);
-                       }
+                        } else {
+                            // clearTimeout(wait);
+                            // clearInterval(repeat);
+                            console.log('---------1601')
+                            reject1(err)
+                            reject(err);
+                        }
+                    } else if (care.additionalInfo === undefined) {
+                        reject('Unknown error occured')
+                        reject1('Unknown error occured')
                     } else {
                         let responses = care.additionalInfo.responses;
                         if (responses && responses[rqId]) {

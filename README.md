@@ -9,7 +9,7 @@ Due to the dearth of resources, we have chosen to design and build our systems i
 1. [Thingsboard](https://demo.thingsboard.io/)
 2. [Github pages](https://github.com/)
 3. [Cors Proxy](https://cors-anywhere.herokuapp.com/), [cseco.co.ke:8080](http://cseco.co.ke:8080), [cors.cseco.co.ke](https://cors.cseco.co.ke:8080). Used to overcome chrome Cross-Origin issues.
-4. [JSON Proxy](https://github.com/csymapp/jsonproxy) - check jsonproxy server in rule rule chain. Required because rule nodes do not accept text as input.
+4. [JSON Proxy](https://github.com/csymapp/jsonproxy) - check jsonproxy server in rule rule chain. Required because rule nodes do not accept text as input. Also proxy for octokit.
 
 ***Note***
 
@@ -22,39 +22,18 @@ This access control system is intended to authenticate and authorize users on an
 ## Steps Undertaken
 
 1. Created tenant account on [Thingsboard](https://demo.thingsboard.io/) using things****@g****s.org (check vault for this email)
-2. Created User Management Device with 
-3. Saved tb credentials (tb_tenant_*)in `server attributes` of device (so that they can only be accessible from rule chain)
-4. Obtained accessToken of public user Management Device
-5. `Created Customer`. GS Publications
-5. `Created Assets`. Which
-5. `Rule chains`. Which
-
-## Usage
-
-### Creating a Customer (Including self registration)
-
-
-
-## Developper Documentation
-
-### Creating a customer
-
-
-## Install the dependencies
-```bash
-yarn
-```
-
-### Start the app in development mode (hot-code reloading, error reporting, etc.)
-```bash
-quasar dev
-```
-
-
-### Build the app for production
-```bash
-quasar build
-```
-
-### Customize the configuration
-See [Configuring quasar.conf.js](https://quasar.dev/quasar-cli/quasar-conf-js).
+2. Created `UserManagement` device profile
+3. Created `UserManagement` Device in `UserManagement` device profile
+4. Saved tb credentials (tb_tenant_email, tb_tenant_password) in `server attributes` of device (so that they can only be accessible from rule chain). Other attributes:
+- tb_tenant_email - tenant admin email
+- tb_tenant_password - tenant admin password
+- GitOwner GospelSounders - github organization
+- GitRepo access_control_rule_chains - github repo
+- JSONPROXY https://jsonproxy.cseco.co.ke - server running jsonproxy (with github api proxy as well)
+- SSLGitkey - github api key
+- TBSERVER https://demo.thingsboard.io - tb server. So rulechains can be imported into any server
+- APPLICATIONNAME GS Publications - name of customer
+5. Created relation for each ruleChain: FROM contains device `UserManagement`. Rule chains are pushed every time there is a change. They can be imported from github to any server.
+6. Created ${APPLICATION NAME} customer
+7. Get token of public `UserManagement` device and put in application
+8. Build `quasar build` and copy `dist/spa` to docs

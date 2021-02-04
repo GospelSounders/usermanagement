@@ -95,7 +95,7 @@
         :filter="filter"
         row-key="index"
         class="col"
-        @row-click="onRowClick"
+        @row-click="selectUser"
       >
         <template v-slot:top-right>
           <q-input
@@ -141,6 +141,35 @@
                 </q-item>
             </q-list> -->
     </div>
+
+    <q-dialog
+      v-model="selectedUser"
+      transition-show="rotate"
+      transition-hide="rotate"
+    >
+      <q-card>
+        <q-card-section>
+          <div class="text-h6 text-center">{{selectedFirstName}} {{selectedLastName}}</div>
+        </q-card-section>
+        <q-card-section class="q-pt-none text-center">
+         {{selectedEmail}}
+        </q-card-section>
+        <q-card-section class="q-pt-none">
+         <q-btn label="delete" @click="deleteUser"><q-icon name="delete" color="red"/></q-btn>
+         <q-btn label="roles" @click="userRoles"><q-icon name="security" color="primary"/></q-btn>
+         <q-btn label="projects" @click="userProjects"><q-icon name="group_work" color="secondary"/></q-btn>
+         <q-btn label="Edit" @click="editUser"><q-icon name="group_work" color="secondary"/></q-btn>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <!-- <q-btn flat label="Decline" color="primary" v-close-popup /> -->
+          <!-- <q-btn flat label="Accept" color="primary" v-close-popup /> -->
+          <q-btn flat label="Cancel" color="primary" v-close-popup />
+          <q-btn flat label="Ok" color="primary" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
   </q-page>
 </template>
 
@@ -177,6 +206,7 @@ export default {
       passwordErrorMessage: "",
       users: [],
       filter: "",
+      selectedUser:false,
       columns: [
         {
           name: "firstName",
@@ -213,13 +243,22 @@ export default {
         // { name: 'calcium', label: 'Calcium (%)', field: 'calcium', sortable: true, sort: (a, b) => parseInt(a, 10) - parseInt(b, 10) },
         // { name: 'iron', label: 'Iron (%)', field: 'iron', sortable: true, sort: (a, b) => parseInt(a, 10) - parseInt(b, 10) }
       ],
+      selectedEmail: '',
+      selectedId: '',
+      selectedFirstName: '',
+      selectedLastName: '',
     };
   },
   methods: {
     submit(){
       this.$refs.userRegistrationForm.submit();
     },
-    onRowClick(evt, row) {
+    selectUser(evt, row) {
+      this.selectedUser = true;
+      this.selectedEmail = row.email
+      this.selectedId = typeof row.id === 'object'? row.id.id:row.id
+      this.selectedFirstName = row.firstName
+      this.selectedLastName = row.lastName
       console.log("clicked on", row);
     },
     isValidEmail() {
@@ -269,13 +308,17 @@ export default {
             type: "negative",
             message: "Passwords don't match",
           });
-          // return reject("Passwords don't match");
           return resolve(false); // reject
         }
         this.working = true;
         this.showCustom();
         let [err, care] = await to(
-          authHelpers.createUser(this.email, this.firstName, this.lastName, this.password)
+          authHelpers.createUser({
+            user: this.email,
+            firstName:this.firstName,
+            lastName:this.lastName,
+            password:this.password
+          })
         );
         this.working = false;
         if (err) {
@@ -310,14 +353,14 @@ export default {
     async deleteUser(user) {
       return new Promise(async (resolve, reject) => {
         let [err, care] = await to(
-          this.confirm(`Are you sure you want to delete ${user}`, "Delete User")
+          this.confirm(`Are you sure you want to delete ${this.selectedEmail}`, "Delete User")
         );
         if (err) {
           return resolve(false); // reject
         }
         this.working = true;
         this.showCustom();
-        [err, care] = await to(authHelpers.deleteUser(user));
+        [err, care] = await to(authHelpers.deleteUser(this.selectedId));
         this.working = false;
         if (err) {
           console.log(err);
@@ -326,6 +369,8 @@ export default {
           return resolve(false); // reject
         } else {
           this.users = care.users;
+          this.selectedUser = false;
+          this.$q.notify({ type: "positive", message: `${this.selectedEmail} deleted.` });
           resolve(care.users);
         }
       });

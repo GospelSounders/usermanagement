@@ -108,7 +108,7 @@ export default {
     };
   },
   methods: {
-       changeAccept(value) {
+    changeAccept(value) {
       this.accept = value;
     },
     submit() {
@@ -192,7 +192,12 @@ export default {
         this.working = true;
         this.showCustom();
         let [err, care] = await to(
-          authHelpers.createUser(this.email, this.firstName, this.lastName, this.password)
+          authHelpers.createUser({
+            user: this.email,
+            firstName:this.firstName,
+            lastName:this.lastName,
+            password:this.password
+          }, true)
         );
         this.working = false;
         if (err) {
@@ -205,7 +210,7 @@ export default {
           this.users.push(care);
           this.$q.notify({
             type: "positive",
-            message: 'Registration successful',
+            message: "Registration successful",
           });
           // console.log(care);
         }
