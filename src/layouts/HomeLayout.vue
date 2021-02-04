@@ -42,6 +42,17 @@
                         </q-card-section>
                     </q-card>
                 </q-expansion-item> -->
+                <q-item tag="a" href="#/home">
+                    <q-item-section avatar>
+                        <q-icon name="home" />
+                    </q-item-section>
+                    <q-item-section>
+                        <q-item-label>Home</q-item-label>
+                        <!-- <q-item-label caption>
+                                        caption
+                                    </q-item-label> -->
+                    </q-item-section>
+                </q-item>
                 <q-expansion-item group="somegroup" icon="people" label="Users" clickable tag="a" href="#/users">
                     <q-card class="bg-primary">
                         <q-card-section>

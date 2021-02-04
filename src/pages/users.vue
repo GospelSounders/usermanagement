@@ -1,13 +1,17 @@
 <template>
   <q-page padding class="">
-    <div class="row q-mb-lg">
-      <!-- <q-input
-                        v-model="user"
-                        placeholder="Register New User"
-                        class="col"
-                        @keyup.enter="submit"
-                      />
-                      <q-btn color="primary" size="sm" label="Create" @click="createUser" /> -->
+
+     <q-dialog
+      v-model="createUserDialog"
+      transition-show="rotate"
+      transition-hide="rotate"
+    >
+     <q-card class="bg-secondary text-white">
+        <q-card-section class="text-center text-h3"> 
+          <div class="text-subtitle2">Create New User</div>
+        </q-card-section>
+              <q-separator dark />
+        <q-card-section>
       <q-form
         @submit="createUser"
         @reset="onReset"
@@ -85,7 +89,9 @@
           />
         </div>
       </q-form>
-    </div>
+        </q-card-section>
+     </q-card>
+          </q-dialog>
     <div class="row">
       <q-table
         title="Users"
@@ -108,6 +114,7 @@
             <q-icon slot="append" name="search" />
           </q-input>
           <q-btn flat><q-icon color="primary" name="refresh" side @click="fetchUsers()" /></q-btn>
+          <q-btn flat><q-icon color="primary" name="add_circle" side @click="createUserDialog=true" /></q-btn>
         </template>
         <!-- <template v-slot:body="props">
           <q-tr :props="props">
@@ -207,6 +214,7 @@ export default {
       users: [],
       filter: "",
       selectedUser:false,
+      createUserDialog:false,
       columns: [
         {
           name: "firstName",
@@ -269,6 +277,8 @@ export default {
       this.email = null;
       this.firstName = null;
       this.lastName = null;
+      this.password = null;
+      this.cpassword = null;
     },
     showCustom(title = "") {
       const dialog = this.$q.dialog({

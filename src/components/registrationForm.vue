@@ -219,7 +219,11 @@ export default {
 
     onReset() {
       this.email = null;
+      this.firstName = null;
+      this.lastName = null;
       this.password = null;
+      this.cpassword = null;
+      this.accept = false;
     },
   },
 };
