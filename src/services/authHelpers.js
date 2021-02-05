@@ -281,7 +281,7 @@ class _authHelpers extends Events {
             resolve(care.data)
         })
     }
-    createProject = async (project) => {
+    createProject = async (project, application, repo) => {
         return new Promise(async (resolve, reject) => {
             let [err, care] = await to(this.sendSaveTeletry({ "type": "projects", "action": "create", "project": project }))
             console.log('adhkjashdkhasdk')
@@ -311,6 +311,40 @@ class _authHelpers extends Events {
             resolve(care)
         })
     }
+
+    createApplication = async (application) => {
+        return new Promise(async (resolve, reject) => {
+            let [err, care] = await to(this.sendSaveTeletry({ "type": "applications", "action": "create", "application": application }))
+            console.log('adhkjashdkhasdk')
+            if (err) {
+                return reject(err);
+            }
+            console.log('RETURNED...')
+            console.log(care)
+            resolve(care)
+        })
+    }
+    
+    fetchApplications = async () => {
+        return new Promise(async (resolve, reject) => {
+            let [err, care] = await to(this.sendSaveTeletry({ "type": "applications", "action": "get" }))
+            if (err) {
+                return reject(err);
+            }
+            resolve(care)
+        })
+    }
+    
+    deleteApplication = async (application) => {
+        return new Promise(async (resolve, reject) => {
+            let [err, care] = await to(this.sendSaveTeletry({ "type": "applications", "action": "delete", "application": application }))
+            if (err) {
+                return reject(err);
+            }
+            resolve(care)
+        })
+    }
+
     readUserData = async () => {
         return new Promise(async (resolve, reject) => {
             let url = `${this.settings.TBURL}/auth/user`

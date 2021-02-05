@@ -121,6 +121,22 @@
                         </q-card-section>
                     </q-card>
                 </q-expansion-item>
+                <q-expansion-item group="somegroup" icon="apps" label="Applications" clickable tag="a" href="#/applications">
+                    <q-card class="bg-primary">
+                        <q-card-section>
+                            <q-list>
+                                <q-item tag="a" href="#/applications">
+                                    <q-item-section avatar>
+                                        <q-icon name="apps" />
+                                    </q-item-section>
+                                    <q-item-section>
+                                        <q-item-label> Applications</q-item-label>
+                                    </q-item-section>
+                                </q-item>
+                            </q-list>
+                        </q-card-section>
+                    </q-card>
+                </q-expansion-item>
     
 
                 <q-separator />

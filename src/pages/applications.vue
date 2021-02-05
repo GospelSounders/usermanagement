@@ -1,32 +1,32 @@
 <template>
   <q-page padding class="">
     <q-dialog
-      v-model="createProjectDialog"
+      v-model="createApplicationDialog"
       transition-show="rotate"
       transition-hide="rotate"
     >
       <q-card class="bg-secondary text-white">
         <q-card-section class="text-center text-h3">
-          <div class="text-subtitle2">Create New Project</div>
+          <div class="text-subtitle2">Create New Application</div>
         </q-card-section>
         <q-separator dark />
         <q-card-section>
           <q-form
-            @submit="createProject"
+            @submit="createApplication"
             @reset="onReset"
             class="col q-gutter-md text-white"
-            ref="newProjectForm"
+            ref="newApplicationForm"
           >
             <q-input
               filled
-              v-model="project"
+              v-model="application"
               type="text"
-              label="Project Name"
-              hint="Project Name"
-              @input="repoNameFromProject"
+              label="Application Name"
+              hint="Application Name"
+              @input="repoNameFromApplication"
               lazy-rules
               :rules="[
-                (val) => (val && val.length > 0) || 'Please enter project name',
+                (val) => (val && val.length > 0) || 'Please enter application name',
               ]"
               @keyup.enter="submit"
             />
@@ -45,7 +45,7 @@
               hint="Repo"
               lazy-rules
               :rules="[
-                (val) => (val && val.length > 0) || 'Please project name',
+                (val) => (val && val.length > 0) || 'Please application name',
               ]"
               @keyup.enter="submit"
             />
@@ -68,30 +68,30 @@
       <q-list bordered highlight class="col">
         <q-item-label header>
           <div class="row">
-            Projects
+            Applications
             <q-space />
             <q-btn flat>
               <q-icon
                 color="primary"
                 name="refresh"
                 side
-                @click="fetchProjects()"
+                @click="fetchApplications()"
             /></q-btn>
             <q-btn flat>
               <q-icon
                 color="primary"
                 name="add_circle"
                 side
-                @click="createProjectDialog = true"
+                @click="createApplicationDialog = true"
             /></q-btn>
           </div>
         </q-item-label>
-        <q-item v-for="(project, index) in projects" v-bind:key="index">
+        <q-item v-for="(application, index) in applications" v-bind:key="index">
           <q-item-section avatar>
             <q-icon color="primary" name="security" />
           </q-item-section>
-          <q-item-section>{{ project }}</q-item-section>
-          <q-item-section side clickable @click="deleteProject(project)">
+          <q-item-section>{{ application }}</q-item-section>
+          <q-item-section side clickable @click="deleteApplication(application)">
             <q-icon name="delete" color="red" />
           </q-item-section>
         </q-item>
@@ -116,7 +116,7 @@ const _events = require("../services/EventEmitter").default;
 const events = new _events();
 
 export default {
-  name: "Projects",
+  name: "Applications",
   components: {},
   async created() {
     events.on("error", this.loadList);
@@ -129,17 +129,17 @@ export default {
       window.location.assign("#/"); // not logged in
       return;
     }
-    [err, care] = await to(this.fetchProjects());
+    [err, care] = await to(this.fetchApplications());
   },
   beforeDestroy() {
     events.removeListener("error", this.loadList);
   },
   data() {
     return {
-      project: "",
+      application: "",
       repo: "",
-      projects: [],
-      createProjectDialog: false,
+      applications: [],
+      createApplicationDialog: false,
       applications: [],
       allApplications: [],
       application: ''
@@ -165,26 +165,26 @@ export default {
     },
     onReset() {
       this.application = '';
-      this.project = '';
+      this.application = '';
     },
     submit() {
-      this.$refs.newProjectForm.submit();
+      this.$refs.newApplicationForm.submit();
     },
     alert(msg) {
       alert(msg);
     },
-    async createProject() {
+    async createApplication() {
       return new Promise(async (resolve, reject) => {
-        if (this.project === "") {
+        if (this.application === "") {
           this.$q.notify({
             type: "negative",
-            message: "Project cannot be blank",
+            message: "Application cannot be blank",
           });
-          return reject("project cannot be blank");
+          return reject("application cannot be blank");
         }
         this.working = true;
-        this.showCustom('creating project');
-        let [err, care] = await to(authHelpers.createProject(this.project, this.application, this.repo));
+        this.showCustom('creating application');
+        let [err, care] = await to(authHelpers.createApplication(this.application));
         this.working = false;
         if (err) {
           this.$q.notify({
@@ -194,41 +194,41 @@ export default {
           resolve(false);
         } else {
           console.log(care);
-          this.projects = care.projects;
-          this.project = "";
+          this.applications = care.applications;
+          this.application = "";
         }
       });
     },
-    async fetchProjects() {
+    async fetchApplications() {
       return new Promise(async (resolve, reject) => {
         this.working = true;
-        this.showCustom('fetching projects');
-        let [err, care] = await to(authHelpers.fetchProjects());
+        this.showCustom('fetching applications');
+        let [err, care] = await to(authHelpers.fetchApplications());
         this.working = false;
         if (err) {
           this.$q.notify({ type: "negative", message: err });
           //   return reject(err);
           resolve(false); // reject
         } else {
-          this.projects = care.projects;
-          resolve(care.projects);
+          this.applications = care.applications;
+          resolve(care.applications);
         }
       });
     },
-    async deleteProject(project) {
+    async deleteApplication(application) {
       return new Promise(async (resolve, reject) => {
         let [err, care] = await to(
           this.confirm(
-            `Are you sure you want to delete ${project}`,
-            "Delete Project"
+            `Are you sure you want to delete ${application}`,
+            "Delete Application"
           )
         );
         if (err) {
           return resolve(false); // reject
         }
         this.working = true;
-        this.showCustom('deleting project');
-        [err, care] = await to(authHelpers.deleteProject(project));
+        this.showCustom('deleting application');
+        [err, care] = await to(authHelpers.deleteApplication(application));
         this.working = false;
         if (err) {
           console.log(err);
@@ -236,8 +236,8 @@ export default {
           //   return reject(err);
           return resolve(false); // reject
         } else {
-          this.projects = care.projects;
-          resolve(care.projects);
+          this.applications = care.applications;
+          resolve(care.applications);
         }
       });
     },
@@ -355,11 +355,11 @@ export default {
       this.allApplications = [...tmp]
       this.applications = [... this.allApplications]
     },
-    repoNameFromProject(value){
+    repoNameFromApplication(value){
       this.repoNameFromApplication(value)
     },
     repoNameFromApplication(value){
-      this.repo = `${(this.project||'').toLowerCase().replace('.','-').replace(' ', '-')}.${(this.application||'').toLowerCase().replace('.','-').replace(' ', '-')}.gsp`
+      this.repo = `${(this.application||'').toLowerCase().replace('.','-').replace(' ', '-')}.${(this.application||'').toLowerCase().replace('.','-').replace(' ', '-')}.gsp`
     }
   },
 };
