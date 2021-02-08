@@ -29,7 +29,8 @@ This access control system is intended to authenticate and authorize users on an
 - tb_tenant_password - tenant admin password
 - GitOwner GospelSounders - github organization
 - GitRepo access_control_rule_chains - github repo
-- JSONPROXY https://jsonproxy.cseco.co.ke - server running jsonproxy (with github api proxy as well)
+- GitRepoForApplications applications-list - github repo
+- [JSONPROXY](https://github.com/csymapp/jsonproxy) https://jsonproxy.cseco.co.ke - server running jsonproxy (with github api proxy as well)
 - SSLGitkey - github api key
 - TBSERVER https://demo.thingsboard.io - tb server. So rulechains can be imported into any server
 - APPLICATIONNAME GS Publications - name of customer
@@ -37,3 +38,11 @@ This access control system is intended to authenticate and authorize users on an
 6. Created ${APPLICATION NAME} customer
 7. Get token of public `UserManagement` device and put in application
 8. Build `quasar build` and copy `dist/spa` to docs
+
+
+## Deleting an application
+
+Does not delete project files
+
+## Todo
+- [ ] Editing Applications. Not enabled in tb API

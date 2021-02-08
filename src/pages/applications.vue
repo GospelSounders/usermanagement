@@ -20,52 +20,164 @@
             <q-input
               filled
               v-model="application"
+              :disable="dialogFor==='edit'"
               type="text"
               label="Application Name"
               hint="Application Name"
               @input="repoNameFromApplication"
               lazy-rules
               :rules="[
-                (val) => (val && val.length > 0) || 'Please enter application name',
+                (val) =>
+                  (val && val.length > 0) || 'Please enter application name',
               ]"
               @keyup.enter="submit"
             />
-            <q-select @input="repoNameFromApplication" clearable use-input @filter="filterFn" filled v-model="application" :options="applications" label="Application" 
-            lazy-rules
-              :rules="[
-                (val) => (val && val.length > 0) || 'Please select application',
-              ]"
-            />
             <q-input
-            disable
+              v-model="application"
+              disable
               filled
-              v-model="repo"
+              autogrow
               type="text"
-              label="Repo"
-              hint="Repo"
+              label="Description"
+              hint="Description"
               lazy-rules
               :rules="[
-                (val) => (val && val.length > 0) || 'Please application name',
+                (val) =>
+                  (val && val.length > 0) ||
+                  'Please enter a description of the application',
+              ]"
+              @keyup.enter="submit"
+            />
+            <q-input
+              filled
+              v-model="icon"
+              type="text"
+              label="Icon"
+              hint="Material Icon"
+              lazy-rules
+              :rules="[
+                (val) => (val && val.length > 0) || 'Please enter application icon name',
+              ]"
+              @keyup.enter="submit"
+            >
+            <template v-slot:prepend>
+              <q-icon :name="icon"/>
+            </template>
+            <template v-slot:after>
+              <!-- <q-btn round color="primary"><q-icon name="help"/></q-btn> -->
+              <q-btn round color="primary" @click="openLink(settings.MATERIALICONS,'_blank');"><q-icon name="help"/>
+              <q-tooltip>
+          Get icon name from list of icons
+        </q-tooltip>
+              </q-btn>
+              <!-- <a :href="settings.MATERIALICONS">?</a> -->
+            </template>
+
+            
+            
+            </q-input>
+            <q-input
+              filled
+              v-model="link"
+              type="text"
+              label="Application Url"
+              hint="Application Url"
+              lazy-rules
+              :rules="[
+                (val) => (val && val.length > 0) || 'Please enter application url',
               ]"
               @keyup.enter="submit"
             />
             <div class="col">
-          <q-btn label="Create" type="submit" color="primary" />
-          <q-btn
-            label="Reset"
-            type="reset"
-            color="primary"
-            flat
-            class="q-ml-sm"
-          />
-        </div>
+              <q-btn :label="dialogFor==='create'?'Create':'Edit'" type="submit" color="primary" />
+              <q-btn
+                label="Reset"
+                type="reset"
+                color="primary"
+                flat
+                class="q-ml-sm"
+              />
+            </div>
           </q-form>
         </q-card-section>
       </q-card>
     </q-dialog>
 
+    
+  <q-table
+      grid
+      :card-container-class="cardContainerClass"
+      :data="applications"
+      :columns="columns"
+      title="Applications"
+      row-key="name"
+      :filter="filter"
+      hide-bottom
+      :rows-per-page-options="rowsPerPageOptions"
+    >
+    <template v-slot:top-right>
+       
+            <q-btn flat>
+              <q-icon
+                color="primary"
+                name="refresh"
+                side
+                @click="fetchApplications()"
+            /></q-btn>
+            <q-btn flat>
+              <q-icon
+                color="primary"
+                name="add_circle"
+                side
+                @click="createApplicationDialog = true;dialogFor = 'create'"
+            /></q-btn>
+         <q-space />
+        <q-input dense debounce="300" v-model="filter" placeholder="Search">
+          <q-icon slot="append" name="search" />
+        </q-input>
+      </template>
+      <template v-slot:item="props">
+        <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4">
+          <q-card class="bg-white">
+            <q-card-section class="text-left text-h6">
+             <div> <span><strong>{{ props.row.name }}</strong></span>  <span class="float-right"> 
+               <q-btn disable
+            @click="createApplicationDialog = true;dialogFor = 'edit';selectRow(props.row)"
+          >
+            <q-icon name="edit" color="green" />
+          </q-btn>
+          <q-btn
+            @click="deleteApplication(props.row.name)"
+          >
+            <q-icon name="delete" color="red" />
+          </q-btn>
+               </span> </div> 
+            </q-card-section>
+            <q-card-section class="flex flex-center">
+              <q-card
+                v-ripple
+                class="bg-primary cursor-pointer q-hoverable"
+                style="width: 80vw"
+                @click="selectApplication(props.row.link)"
+              >
+                <q-card-section class="text-center">
+                  <q-icon
+                    :name="props.row.icon"
+                    style="font-size: 6em"
+                    color="white"
+                  />
+                </q-card-section>
+                <q-card-section class="flex flex-center text-white">
+                  <div>{{ props.row.description}}</div>
+                </q-card-section>
+              </q-card>
+            </q-card-section>
+          </q-card>
+        </div>
+      </template></q-table>
+      
     <div class="row">
-      <q-list bordered highlight class="col">
+      <!-- <q-list bordered highlight class="col">
         <q-item-label header>
           <div class="row">
             Applications
@@ -91,11 +203,15 @@
             <q-icon color="primary" name="security" />
           </q-item-section>
           <q-item-section>{{ application }}</q-item-section>
-          <q-item-section side clickable @click="deleteApplication(application)">
+          <q-item-section
+            side
+            clickable
+            @click="deleteApplication(application)"
+          >
             <q-icon name="delete" color="red" />
           </q-item-section>
         </q-item>
-      </q-list>
+      </q-list> -->
     </div>
   </q-page>
 </template>
@@ -136,36 +252,59 @@ export default {
   },
   data() {
     return {
+      settings,
+      filter:"",
       application: "",
-      repo: "",
+      description: "",
+      link: "",
+      icon: "apps",
       applications: [],
+      columns: [
+        { name: "name", label: "Name", field: "name" },
+        { name: "description", label: "Description", field: "description" },
+        { name: "icon", label: "Icon", field: "icon" },
+      ],
       createApplicationDialog: false,
+      dialogFor:"create",
       applications: [],
       allApplications: [],
-      application: ''
+      application: "",
     };
   },
   methods: {
-    filterFn (val, update) {
-      if (val === '') {
+    selectRow(row){
+      this.application = row.name
+      this.link = row.link
+      this.icon = row.icon
+      this.description = row.description
+    },
+    openLink(url, blank){
+      authHelpers.openLink(url, blank=false)
+    },
+    filterFn(val, update) {
+      if (val === "") {
         update(() => {
-          this.applications = this.allApplications
+          this.applications = this.allApplications;
 
           // with Quasar v1.7.4+
           // here you have access to "ref" which
           // is the Vue reference of the QSelect
-        })
-        return
+        });
+        return;
       }
 
       update(() => {
-        const needle = val.toLowerCase()
-        this.applications = this.allApplications.filter(v => v.toLowerCase().indexOf(needle) > -1)
-      })
+        const needle = val.toLowerCase();
+        this.applications = this.allApplications.filter(
+          (v) => v.toLowerCase().indexOf(needle) > -1
+        );
+      });
     },
     onReset() {
-      this.application = '';
-      this.application = '';
+      this.application = "";
+      this.description = "";
+      this.link = "";
+      this.icon = "apps";
     },
     submit() {
       this.$refs.newApplicationForm.submit();
@@ -183,26 +322,32 @@ export default {
           return reject("application cannot be blank");
         }
         this.working = true;
-        this.showCustom('creating application');
-        let [err, care] = await to(authHelpers.createApplication(this.application));
+        this.showCustom("creating application");
+        let action = this.dialogFor==='create'?'create':'edit';
+        let [err, care] = await to(
+          authHelpers.createApplication({application:this.application, description: this.application, icon:this.icon, link:this.link}, action)
+        );
         this.working = false;
         if (err) {
           this.$q.notify({
             type: "negative",
             message: err.msg || err,
           });
-          resolve(false);
+          return resolve(false);
         } else {
-          console.log(care);
           this.applications = care.applications;
-          this.application = "";
+          this.onReset();
+          this.createApplicationDialog = false
+          this.$nextTick(()=>{this.createApplicationDialog = true})
+          // 
+          // this.application = "";
         }
       });
     },
     async fetchApplications() {
       return new Promise(async (resolve, reject) => {
         this.working = true;
-        this.showCustom('fetching applications');
+        this.showCustom("fetching applications");
         let [err, care] = await to(authHelpers.fetchApplications());
         this.working = false;
         if (err) {
@@ -227,11 +372,10 @@ export default {
           return resolve(false); // reject
         }
         this.working = true;
-        this.showCustom('deleting application');
+        this.showCustom("deleting application");
         [err, care] = await to(authHelpers.deleteApplication(application));
         this.working = false;
         if (err) {
-          console.log(err);
           this.$q.notify({ type: "negative", message: err.msg || err });
           //   return reject(err);
           return resolve(false); // reject
@@ -252,19 +396,15 @@ export default {
           })
           .onOk(() => {
             return resolve(true);
-            // console.log('>>>> OK')
           })
           .onOk(() => {
             return resolve(true);
-            // console.log('>>>> second OK catcher')
           })
           .onCancel(() => {
             return reject(true);
-            // console.log('>>>> Cancel')
           })
           .onDismiss(() => {
             return reject(true);
-            // console.log('I am triggered on both OK and Cancel')
           });
       });
     },
@@ -343,7 +483,7 @@ export default {
       let tmp = [];
       for (let i in list) {
         let item = list[i];
-        tmp.push(i);
+        tmp.push(item);
         // tmp.push({
         //   name: item.name || "anon",
         //   icon: item.icon || "help",
@@ -352,14 +492,42 @@ export default {
         // });
       }
       // this.list = [...tmp];
-      this.allApplications = [...tmp]
-      this.applications = [... this.allApplications]
+      this.allApplications = [...tmp];
+      this.applications = [...this.allApplications];
+      // this.applications = list;
     },
-    repoNameFromApplication(value){
-      this.repoNameFromApplication(value)
+    repoNameFromApplication(value) {
+      this.repoNameFromApplication(value);
     },
-    repoNameFromApplication(value){
-      this.repo = `${(this.application||'').toLowerCase().replace('.','-').replace(' ', '-')}.${(this.application||'').toLowerCase().replace('.','-').replace(' ', '-')}.gsp`
+    repoNameFromApplication(value) {
+      this.repo = `${(this.application || "")
+        .toLowerCase()
+        .replace(".", "-")
+        .replace(" ", "-")}.${(this.application || "")
+        .toLowerCase()
+        .replace(".", "-")
+        .replace(" ", "-")}.gsp`;
+    },
+    selectApplication(url) {
+      window.location.assign(url);
+    },
+  },
+  computed: {
+    cardContainerClass () {
+      if (this.$q.screen.gt.xs) {
+        return 'grid-masonry grid-masonry--' + (this.$q.screen.gt.sm ? '3' : '2')
+      }
+
+      return void 0
+    },
+
+    rowsPerPageOptions () {
+      return [0]
+      if (this.$q.screen.gt.xs) {
+        return this.$q.screen.gt.sm ? [ 3, 6, 9 ] : [ 3, 6 ]
+      }
+
+      return [ 3 ]
     }
   },
 };

@@ -3,5 +3,6 @@
     "PUBLIC_DEVICE_ACCESS_TOKEN": "9sE9Z86OdYsynyCJKjnq",
     "CORS_PROXY": "https://cors.cseco.co.ke",
     "JSONPROXY": "https://jsonproxy.cseco.co.ke",
-    "LISTURL": "https://raw.githubusercontent.com/GospelSounders/applications-list/master/applications.json"
+    "LISTURL": "https://raw.githubusercontent.com/GospelSounders/applications-list/master/applications.json",
+    "MATERIALICONS": "https://material.io/resources/icons/"
 }

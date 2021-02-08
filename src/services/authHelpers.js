@@ -312,15 +312,17 @@ class _authHelpers extends Events {
         })
     }
 
-    createApplication = async (application) => {
+    openLink(url, blank=false){
+        window.open(url,blank);
+    }
+
+    createApplication = async (params, action) => {
+        let {application, description, icon, link} = params
         return new Promise(async (resolve, reject) => {
-            let [err, care] = await to(this.sendSaveTeletry({ "type": "applications", "action": "create", "application": application }))
-            console.log('adhkjashdkhasdk')
+            let [err, care] = await to(this.sendSaveTeletry({ "type": "applications", action, "application": application, description, icon, link }))
             if (err) {
                 return reject(err);
             }
-            console.log('RETURNED...')
-            console.log(care)
             resolve(care)
         })
     }
@@ -426,12 +428,12 @@ class _authHelpers extends Events {
                             // clearTimeout(wait);
                             // clearInterval(repeat);
                             console.log('---------1601')
-                            reject1(err)
+                            resolve1(false); // reject1(err)
                             reject(err);
                         }
                     } else if (care.additionalInfo === undefined) {
                         reject('Unknown error occured')
-                        reject1('Unknown error occured')
+                        resolve1(false); // reject1('Unknown error occured')
                     } else {
                         let responses = care.additionalInfo.responses;
                         if (responses && responses[rqId]) {
@@ -448,7 +450,7 @@ class _authHelpers extends Events {
                                 return resolve(response.msg);
                             } else {
                                 this.removeListener(listener, getResponse)
-                                reject1(response.msg.error)
+                                resolve1(false); // reject1(response.msg.error)
                                 return reject(response.msg.error);
                             }
                         } else {
@@ -460,7 +462,7 @@ class _authHelpers extends Events {
                             } else {
                                 this.removeListener(listener, getResponse)
                                 reject('timed out')
-                                reject1('timed out')
+                                resolve1(false); // reject1('timed out')
                             }
                         }
                     }
