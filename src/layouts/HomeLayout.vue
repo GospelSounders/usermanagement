@@ -8,7 +8,7 @@
             </q-toolbar>
         </q-header>
     
-        <q-drawer v-model="leftDrawerOpen" overlay bordered :breakpoint="500" persist content-class="bg-primary text-white">
+        <q-drawer ref="drawer" v-model="leftDrawerOpen" @mouseout="mouseOutofDrawer" overlay bordered :breakpoint="500" persist content-class="bg-primary text-white">
             <q-list>
                 <!-- <q-expansion-item group="somegroup" icon="people" label="Users">
                     <q-card class="bg-primary">
@@ -246,7 +246,6 @@
                 <!-- <q-item-label header class="text-grey-8" color="secondary">
                                 Essential Links
                             </q-item-label> -->
-                <!-- <EssentialLink v-for="link in essentialLinks" :key="link.title" v-bind="link" /> -->
             </q-list>
         </q-drawer>
     
@@ -257,51 +256,6 @@
 </template>
 
 <script>
-import EssentialLink from 'components/EssentialLink.vue'
-
-const linksData = [{
-        title: 'Docs',
-        caption: 'quasar.dev',
-        icon: 'school',
-        link: 'https://quasar.dev'
-    },
-    {
-        title: 'Github',
-        caption: 'github.com/quasarframework',
-        icon: 'code',
-        link: 'https://github.com/quasarframework'
-    },
-    {
-        title: 'Discord Chat Channel',
-        caption: 'chat.quasar.dev',
-        icon: 'chat',
-        link: 'https://chat.quasar.dev'
-    },
-    {
-        title: 'Forum',
-        caption: 'forum.quasar.dev',
-        icon: 'record_voice_over',
-        link: 'https://forum.quasar.dev'
-    },
-    {
-        title: 'Twitter',
-        caption: '@quasarframework',
-        icon: 'rss_feed',
-        link: 'https://twitter.quasar.dev'
-    },
-    {
-        title: 'Facebook',
-        caption: '@QuasarFramework',
-        icon: 'public',
-        link: 'https://facebook.quasar.dev'
-    },
-    {
-        title: 'Quasar Awesome',
-        caption: 'Community Quasar projects',
-        icon: 'favorite',
-        link: 'https://awesome.quasar.dev'
-    }
-];
 
 const axios = require("axios");
 const to = require("await-to-js").to;
@@ -311,11 +265,10 @@ import { QSpinnerGears } from 'quasar'
 
 export default {
     name: 'MainLayout',
-    components: { EssentialLink },
+    components: {  },
     data() {
         return {
-            leftDrawerOpen: false,
-            essentialLinks: linksData
+            leftDrawerOpen: false
         }
     },
     async created() {
@@ -329,6 +282,11 @@ export default {
         logout() {
             authHelpers.logout()
             window.location.assign("#/");
+        },
+        mouseOutofDrawer(pos){
+            if(Math.abs(pos.clientX - this.$refs.drawer.width) < 5){
+                this.leftDrawerOpen = false
+            }
         }
     }
 }

@@ -44,5 +44,9 @@ This access control system is intended to authenticate and authorize users on an
 
 Does not delete project files
 
+## Note
+
+***User data will be deleted if account on [thingsboard demo](https://demo.thingsboard.io) is deleted.*** Therefore this should be changed as soon as it is done.
+
 ## Todo
 - [ ] Editing Applications. Not enabled in tb API

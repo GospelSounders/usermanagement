@@ -59,6 +59,8 @@ export default {
     return {
       role: "",
       roles: [],
+      rolesObj: {},
+      allRoles: [],
     };
   },
   methods: {
@@ -86,7 +88,16 @@ export default {
           resolve(false);
         } else {
           console.log(care);
-          this.roles = care.roles;
+          this.rolesObj = care.roles;
+          let tmp = [];
+          for (let i in this.rolesObj) {
+            tmp.push(this.rolesObj[i].name);
+          }
+          this.allRoles = tmp;
+          let existingRoles = [];
+          this.roles = this.allRoles.filter(
+            (item) => !existingRoles.includes(item.name)
+          );
           this.role = "";
         }
       });
@@ -102,12 +113,29 @@ export default {
           //   return reject(err);
           resolve(false); // reject
         } else {
-          this.roles = care.roles;
+          this.rolesObj = care.roles;
+          // console.log(this.rolesObj)
+          let tmp = [];
+          for (let i in this.rolesObj) {
+            tmp.push(this.rolesObj[i].name);
+          }
+          this.allRoles = tmp;
+          let existingRoles = []
+          this.roles = this.allRoles.filter(
+            (item) => !existingRoles.includes(item.name)
+          );
           resolve(care.roles);
         }
       });
     },
     async deleteRole(role) {
+      let roleId;
+      for(let i in this.rolesObj){
+        let roleDat = this.rolesObj[i];
+        if(roleDat.name === role){
+          roleId = roleDat.id
+        }
+      }
       return new Promise(async (resolve, reject) => {
         let [err, care] = await to(
           this.confirm(`Are you sure you want to delete ${role}`, "Delete Role")
@@ -117,7 +145,7 @@ export default {
         }
         this.working = true;
         this.showCustom();
-        [err, care] = await to(authHelpers.deleteRole(role));
+        [err, care] = await to(authHelpers.deleteRole(role, roleId));
         this.working = false;
         if (err) {
           console.log(err);

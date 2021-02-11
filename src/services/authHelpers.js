@@ -108,6 +108,46 @@ class _authHelpers extends Events {
             resolve(care)
         })
     }
+    fetchUserRoles = async (user) => {
+        return new Promise(async (resolve, reject) => {
+            let [err, care] = await to(this.sendSaveTeletry({ "type": "roles", "action": "userroles", user }))
+            if (err) {
+                return reject(err);
+            }
+            console.log(care)
+            resolve(care)
+        })
+    }
+    fetctUserProjects = async (user) => {
+        return new Promise(async (resolve, reject) => {
+            let [err, care] = await to(this.sendSaveTeletry({ "type": "projects", "action": "userprojects", user }))
+            if (err) {
+                return reject(err);
+            }
+            console.log(care)
+            resolve(care)
+        })
+    }
+    addUserRole = async (user, roleId) => {
+        return new Promise(async (resolve, reject) => {
+            let [err, care] = await to(this.sendSaveTeletry({ "type": "roles", "action": "adduserrole", user, roleId },true))
+            if (err) {
+                return reject(err);
+            }
+            console.log(care)
+            resolve(care)
+        })
+    }
+    removeUserRole = async (user, roleId) => {
+        return new Promise(async (resolve, reject) => {
+            let [err, care] = await to(this.sendSaveTeletry({ "type": "roles", "action": "removeuserrole", user, roleId }))
+            if (err) {
+                return reject(err);
+            }
+            console.log(care)
+            resolve(care)
+        })
+    }
     fetchProjects = async () => {
         return new Promise(async (resolve, reject) => {
             let [err, care] = await to(this.sendSaveTeletry({ "type": "projects", "action": "get" }))
@@ -252,10 +292,10 @@ class _authHelpers extends Events {
             await to(getResponse())
         })
     }
-    deleteUser = async (userId) => {
+    deleteUser = async (userId, fromProfile=false) => {
         return new Promise(async (resolve, reject) => {
             console.log('STARGINT TO DELETE')
-            let [err, care] = await to(this.sendSaveTeletry({ "type": "users", "action": "delete", "user": userId }))
+            let [err, care] = await to(this.sendSaveTeletry({ "type": "users", "action": "delete", "user": userId, fromProfile }))
             if (err) {
                 console.log('REJECTED========')
                 console.log(err)
@@ -293,9 +333,9 @@ class _authHelpers extends Events {
             resolve(care)
         })
     }
-    deleteRole = async (role) => {
+    deleteRole = async (role, roleId) => {
         return new Promise(async (resolve, reject) => {
-            let [err, care] = await to(this.sendSaveTeletry({ "type": "roles", "action": "delete", "role": role }))
+            let [err, care] = await to(this.sendSaveTeletry({ "type": "roles", "action": "delete", role, "roleId": roleId }))
             if (err) {
                 return reject(err);
             }
@@ -357,6 +397,51 @@ class _authHelpers extends Events {
                 }
             }));
             if (err) {
+                return reject(err)
+            }
+            return resolve(care.data)
+        })
+    }
+    
+    readSingleUserData = async (userId) => {
+        return new Promise(async (resolve, reject) => {
+            let url = `${this.settings.TBURL}/auth/user`
+            let [err, care] = await to(this.sendSaveTeletry({ "type": "users", "action": "getSingle", "user": userId }));
+            if (err) {
+                return reject(err)
+            }
+            return resolve(care)
+        })
+    }
+    
+    saveUserData = async (data) => {
+        return new Promise(async (resolve, reject) => {
+            let url = `${this.settings.TBURL}/user?sendActivationMail=false`
+            let [err, care] = await to(axios.post(url, data, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Authorization': 'Bearer ' + this.jwt_token
+                }
+            }));
+            if (err) {
+                return reject(err)
+            }
+            return resolve(care.data)
+        })
+    }
+    changePassword = async (data) => {
+        return new Promise(async (resolve, reject) => {
+            let url = `${this.settings.TBURL}/auth/changePassword`
+            let [err, care] = await to(axios.post(url, data, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Authorization': 'Bearer ' + this.jwt_token
+                }
+            }));
+            if (err) {
+                let tmp = err.response;
+                err = JSON.parse(JSON.stringify(err))
+                err.response = tmp
                 return reject(err)
             }
             return resolve(care.data)
